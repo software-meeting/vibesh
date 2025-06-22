@@ -73,9 +73,9 @@ int main(void) {
             continue;
         }
 
-        //msgbuf[resp_str.len] = '\0';
+        resp_str.start[resp_str.len + 1] = '\0';
 
-        printf("%s", msgbuf);
+        printf("%s", resp_str.start);
     }
 
     curl_easy_cleanup(handle);
@@ -97,20 +97,17 @@ size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 str_view get_value(const char * input) {
     char match[] = "\"text\": \"";
     char * maybe_content = strstr(input, match);
-    printf("%s\n", input);
 
     if (!maybe_content)
         return (str_view) {NULL, 0};
-    char * pos = maybe_content + sizeof(match);
+    char * pos = maybe_content + sizeof(match) - 1;
 
-    printf("test 2\n");
     size_t len = 0;
     while (pos[len] != '"') {
         if (pos[len] == '\\')
             len++;
         len++;
     }
-    printf("test 3\n");
 
     return (str_view) {pos, len - 1};
 }
