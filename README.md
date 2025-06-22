@@ -1,5 +1,5 @@
 # vibe.sh
-The power of AI in your command line.
+The power of AI directly into your command line.
 
 ## Features
 - Control your terminal in plain english!
