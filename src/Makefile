@@ -5,7 +5,7 @@
 # @version 0.1
 CC = clang
 CFLAGS = -Wall -Wvla -Werror
-VERSION = -std=c23
+VERSION = -std=gnu23
 LIBS = -lcurl
 
 ################################################

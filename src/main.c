@@ -1,3 +1,4 @@
+#include <sched.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -5,6 +6,9 @@
 #include <curl/easy.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <spawn.h>
+#include <sys/wait.h>
 
 typedef struct {
     char * start; // Optional, NULL if error
@@ -18,7 +22,7 @@ const static char * req_body_1 = "{\n"
     "\"input\": \"";
 
 const static char * req_body_2 = "\",\n"
-    "\"temperature\": 2.0"
+    "\"temperature\": 1.0"
 "}";
 
 
@@ -54,14 +58,40 @@ int main(void) {
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)msgbuf);
     curl_easy_setopt(handle, CURLOPT_TIMEOUT, 4);
         
+    printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
 
-    while (1) {
+    while (fgets(input, 4096, stdin) != NULL) {
         printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
-        fgets(input, 4096, stdin);
         input[strlen(input) - 1] = '\0';
 
-        snprintf(msgbuf, 4096, "%s%s%s", req_body_1, input, req_body_2);
-    
+        int pipefd[2];
+        pipe(pipefd);
+
+        posix_spawn_file_actions_t actions;
+        posix_spawn_file_actions_init(&actions);
+        posix_spawn_file_actions_addclose(&actions, pipefd[0]);
+        posix_spawn_file_actions_adddup2(&actions, pipefd[1], 1);
+
+        pid_t pid;
+        extern char ** environ;
+        // don't ask
+        char * tree_argv[] = {"/bin/sh", "-c", "tree | awk '{printf \"%s\\\\n\", $0}' ", NULL};
+        posix_spawn(&pid, "/bin/sh", &actions, NULL, tree_argv, environ);
+        close(pipefd[1]);
+
+        FILE * pipe_out = fdopen(pipefd[0], "r");
+
+        char tree_fp_out[4096] = { };
+        char full_prompt[4096] = { };
+        fread(tree_fp_out, sizeof(char), 4096, pipe_out);
+        fclose(pipe_out);
+        int exit_status;
+        waitpid(pid, &exit_status, 0);
+        posix_spawn_file_actions_destroy(&actions);
+        sprintf(full_prompt, "%s%s", tree_fp_out, input);
+
+        snprintf(msgbuf, 4096, "%s%s%s", req_body_1, full_prompt, req_body_2);
+
         curl_easy_setopt(handle, CURLOPT_POSTFIELDS, msgbuf);
         res = curl_easy_perform(handle);
 
