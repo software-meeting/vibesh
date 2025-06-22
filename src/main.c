@@ -116,8 +116,8 @@ char * get_api_key_header() {
     fgets(tmp, 4096, f);
     char * key = calloc(strlen(tmp) + 23, sizeof(char));
 
-    snprintf(key, 23, "Authorization: Bearer ");
-    strncpy(key + 22, tmp, strlen(tmp));
+    sprintf(key, "Authorization: Bearer %s", tmp);
+    key[strlen(key) - 1] = 0;
 
     fclose(f);
 
