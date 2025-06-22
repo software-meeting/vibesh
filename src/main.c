@@ -33,7 +33,8 @@ int main(void) {
     }
 
     struct curl_slist * headers = { };
-    curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, "Authorization: Bearer sample-key");
 
     CURLcode res = { };
     curl_easy_setopt(handle, CURLOPT_URL, "https://echo.free.beeceptor.com");
