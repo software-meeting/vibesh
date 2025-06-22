@@ -112,7 +112,7 @@ int main(int argc, char ** argv) {
         char * cd_start = { };
         if ((cd_start = strstr(resp_str.start, "cd")) != NULL) {
             char directory[4096] = { };
-            for (char * c = cd_start + 3; *c != ' '; c++) {
+            for (char * c = cd_start + 3; (*c != ' ' && *c != '\''); c++) {
                 directory[c - cd_start - 3] = *c;
             }
             chdir(directory);
