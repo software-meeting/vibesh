@@ -21,7 +21,6 @@ const static char * req_body_2 = "\",\n"
     "\"temperature\": 2.0"
 "}";
 
-static char msgbuf[4096] = {0};
 
 
 str_view get_value(const char * input);
@@ -44,13 +43,16 @@ int main(void) {
     struct curl_slist * headers = { };
     headers = curl_slist_append(headers, "Content-Type: application/json");
     headers = curl_slist_append(headers, api_key_header);
+    
+    char input[4096] = {0};
+    char msgbuf[4096] = {0};
 
     CURLcode res = { };
     curl_easy_setopt(handle, CURLOPT_URL, "https://api.openai.com/v1/responses");
     curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)msgbuf);
         
-    char input[4096] = {0};
 
     while (1) {
         fgets(input, 4096, stdin);
@@ -75,7 +77,7 @@ int main(void) {
 
         resp_str.start[resp_str.len + 1] = '\0';
 
-        printf("%s", resp_str.start);
+        printf("%s\n", resp_str.start);
     }
 
     curl_easy_cleanup(handle);
@@ -86,10 +88,7 @@ int main(void) {
 }
 
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
-    char * msg = calloc(nmemb + 1, size);
-    memcpy((void *)msg, (void *)ptr, nmemb);
-    snprintf(msgbuf, 4096, "%s", msg);
-    free(msg);
+    strncpy(userdata, ptr, 4096);
     return size * nmemb;
 }
 
@@ -98,8 +97,10 @@ str_view get_value(const char * input) {
     char match[] = "\"text\": \"";
     char * maybe_content = strstr(input, match);
 
-    if (!maybe_content)
+    if (!maybe_content) {
+        perror("Failed to find 'text' field");
         return (str_view) {NULL, 0};
+    }
     char * pos = maybe_content + sizeof(match) - 1;
 
     size_t len = 0;
