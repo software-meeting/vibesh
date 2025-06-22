@@ -30,14 +30,13 @@ const static char * req_body_2 = "\",\n"
 str_view get_value(const char * input);
 size_t read_callback(char * buffer, size_t size, size_t nitems, void * userdata);
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
-char * get_api_key_header();
+char * get_api_key_header(int use_custom_path, char* cust_path);
 
-int main(void) {
+int main(int argc, char ** argv) {
     curl_global_init(CURL_GLOBAL_ALL);
 
-
     // Make sure to have api_key.txt in the root directory
-    char * api_key_header = get_api_key_header();
+    char * api_key_header = get_api_key_header(argc > 1, argv[1]);
 
     CURL * handle = curl_easy_init();
     if (handle == nullptr) {
@@ -61,6 +60,8 @@ int main(void) {
     printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
 
     while (fgets(input, 4096, stdin) != NULL) {
+        memset(msgbuf, '\0', 4096); // Clear IBUF for reading
+
         printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
         input[strlen(input) - 1] = '\0';
 
@@ -109,7 +110,7 @@ int main(void) {
 
         resp_str.start[resp_str.len + 1] = '\0';
 
-        printf("%s\n", resp_str.start);
+        system(resp_str.start);
     }
 
     curl_easy_cleanup(handle);
@@ -120,7 +121,7 @@ int main(void) {
 }
 
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
-    strncpy(userdata, ptr, 4096);
+    strncat(userdata, ptr, 4096);
     return size * nmemb;
 }
 
@@ -145,8 +146,8 @@ str_view get_value(const char * input) {
     return (str_view) {pos, len - 1};
 }
 
-char * get_api_key_header() {
-    FILE * f  = fopen("../api_key", "r");
+char * get_api_key_header(int use_custom_path, char* cust_path) {
+    FILE * f  = fopen(use_custom_path ? cust_path : "../api_key", "r");
 
     // Woe betide ye who goes here
 
