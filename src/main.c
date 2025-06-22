@@ -55,6 +55,7 @@ int main(void) {
         
 
     while (1) {
+        printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
         fgets(input, 4096, stdin);
         input[strlen(input) - 1] = '\0';
 
