@@ -23,9 +23,15 @@ const static char * message = "{\n"
 str_view get_value(const char * input);
 size_t read_callback(char * buffer, size_t size, size_t nitems, void * userdata);
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+char * get_api_key_header();
 
 int main(void) {
     curl_global_init(CURL_GLOBAL_ALL);
+
+
+
+    // Make sure to have api_key.txt in the root directory
+    char * api_key_header = get_api_key_header();
 
     CURL * handle = curl_easy_init();
     if (handle == nullptr) {
@@ -34,7 +40,7 @@ int main(void) {
 
     struct curl_slist * headers = { };
     headers = curl_slist_append(headers, "Content-Type: application/json");
-    headers = curl_slist_append(headers, "Authorization: Bearer sample-key");
+    headers = curl_slist_append(headers, api_key_header);
 
     CURLcode res = { };
     curl_easy_setopt(handle, CURLOPT_URL, "https://echo.free.beeceptor.com");
@@ -61,6 +67,7 @@ int main(void) {
         system(input);
     }
 
+    free(api_key_header);
     return 0;
 }
 
@@ -97,4 +104,24 @@ str_view get_value(const char * input) {
     }
 
     return (str_view) {pos, len - 1};
+}
+
+char * get_api_key_header() {
+
+    FILE * f  = fopen("../api_key", "r");
+
+    // Woe betide ye who goes here
+
+    char tmp[4096] = { };
+    fgets(tmp, 4096, f);
+    char * key = calloc(strlen(tmp) + 23, sizeof(char));
+
+    snprintf(key, 23, "Authorization: Bearer ");
+    strncpy(key + 22, tmp, strlen(tmp));
+
+    fclose(f);
+
+    printf("%s\n", key);
+
+    return key;
 }
