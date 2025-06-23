@@ -63,6 +63,7 @@ int main(int argc, char ** argv) {
         memset(msgbuf, '\0', 4096); // Clear IBUF for reading
 
         printf("🚀💻⚡ [🧬 VɪʙᴇSʜ 💥️SYSTEM PROMPT 💥️] ⚡💻🚀 >> ");
+        if (input[0] == 0) continue;
         input[strlen(input) - 1] = '\0';
 
         int pipefd[2];
